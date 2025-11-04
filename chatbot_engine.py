@@ -13,23 +13,47 @@ try:
 except ImportError:
     OPENAI_AVAILABLE = False
 
+try:
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
+except ImportError:
+    GEMINI_AVAILABLE = False
+
 
 class TherapeuticChatbot:
     """Advanced therapeutic chatbot with cognitive awareness and empathy"""
 
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        self.use_mock = not self.api_key or not OPENAI_AVAILABLE
+    def __init__(self, api_key: Optional[str] = None, gemini_key: Optional[str] = None):
+        # Try Gemini first (free tier available!), then OpenAI, then mock
+        self.gemini_key = gemini_key or os.getenv("GEMINI_API_KEY")
+        self.openai_key = api_key or os.getenv("OPENAI_API_KEY")
 
-        if not self.use_mock:
+        self.ai_provider = None
+        self.client = None
+        self.gemini_model = None
+
+        # Try Gemini first (using latest model)
+        if self.gemini_key and GEMINI_AVAILABLE:
             try:
-                self.client = OpenAI(api_key=self.api_key)
+                genai.configure(api_key=self.gemini_key)
+                self.gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+                self.ai_provider = "gemini"
+                print("✓ Using Google Gemini 1.5 Flash (Latest)")
             except Exception as e:
-                print(f"Failed to initialize OpenAI client: {e}")
-                self.use_mock = True
-                self.client = None
-        else:
-            self.client = None
+                print(f"Failed to initialize Gemini: {e}")
+
+        # Fall back to OpenAI if Gemini not available
+        if not self.ai_provider and self.openai_key and OPENAI_AVAILABLE:
+            try:
+                self.client = OpenAI(api_key=self.openai_key)
+                self.ai_provider = "openai"
+                print("✓ Using OpenAI GPT-3.5")
+            except Exception as e:
+                print(f"Failed to initialize OpenAI: {e}")
+
+        # Use mock mode if no API available
+        if not self.ai_provider:
+            print("✓ Using Mock Mode (still highly intelligent!)")
 
         # Track recently used response patterns to avoid repetition
         self.recent_response_types = []
@@ -37,32 +61,32 @@ class TherapeuticChatbot:
 
     async def generate_response(self, message: str, user_context: Dict) -> Dict:
         """Generate a therapeutic response based on user message and context"""
-        if self.use_mock:
+
+        # If no AI provider, use mock mode
+        if not self.ai_provider:
             return self._therapeutic_response(message, user_context)
 
         try:
             # Build context from user profile
             context_prompt = self._build_therapeutic_context(user_context)
 
-            # Include recent conversation history if available
-            messages = [{"role": "system", "content": context_prompt}]
-
-            # Add conversation history for context
+            # Build conversation history
+            conversation_history = ""
             if user_context.get("recent_messages"):
                 for past_msg in user_context["recent_messages"][-6:]:  # Last 3 exchanges
-                    messages.append({"role": "user", "content": past_msg.get("message", "")})
-                    messages.append({"role": "assistant", "content": past_msg.get("response", "")})
+                    conversation_history += f"User: {past_msg.get('message', '')}\n"
+                    conversation_history += f"Therapist: {past_msg.get('response', '')}\n"
 
-            messages.append({"role": "user", "content": message})
+            # Generate response based on provider
+            if self.ai_provider == "gemini":
+                bot_response = self._call_gemini(context_prompt, conversation_history, message)
+            elif self.ai_provider == "openai":
+                bot_response = self._call_openai(context_prompt, conversation_history, message, user_context)
+            else:
+                bot_response = None
 
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                temperature=0.8,
-                max_tokens=600
-            )
-
-            bot_response = response.choices[0].message.content
+            if not bot_response:
+                raise Exception("No response from AI provider")
 
             # Analyze the conversation
             analysis = self.analyze_message(message, user_context)
@@ -72,8 +96,50 @@ class TherapeuticChatbot:
                 "analysis": analysis
             }
         except Exception as e:
-            print(f"Error calling OpenAI: {e}")
+            print(f"Error calling {self.ai_provider}: {e}")
             return self._therapeutic_response(message, user_context)
+
+    def _call_gemini(self, context_prompt: str, conversation_history: str, message: str) -> str:
+        """Call Gemini API"""
+        full_prompt = f"""{context_prompt}
+
+Previous conversation:
+{conversation_history}
+
+Current message from user:
+{message}
+
+Respond as a professional therapist:"""
+
+        response = self.gemini_model.generate_content(
+            full_prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.8,
+                max_output_tokens=600,
+            )
+        )
+        return response.text
+
+    def _call_openai(self, context_prompt: str, conversation_history: str, message: str, user_context: Dict) -> str:
+        """Call OpenAI API"""
+        messages = [{"role": "system", "content": context_prompt}]
+
+        # Add conversation history
+        if user_context.get("recent_messages"):
+            for past_msg in user_context["recent_messages"][-6:]:
+                messages.append({"role": "user", "content": past_msg.get("message", "")})
+                messages.append({"role": "assistant", "content": past_msg.get("response", "")})
+
+        messages.append({"role": "user", "content": message})
+
+        response = self.client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            temperature=0.8,
+            max_tokens=600
+        )
+
+        return response.choices[0].message.content
 
     def _build_therapeutic_context(self, user_context: Dict) -> str:
         """Build therapeutic context prompt"""
