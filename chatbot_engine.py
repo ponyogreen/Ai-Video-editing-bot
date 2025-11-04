@@ -8,7 +8,7 @@ from collections import Counter
 import re
 
 try:
-    import openai
+    from openai import OpenAI
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
@@ -22,7 +22,14 @@ class TherapeuticChatbot:
         self.use_mock = not self.api_key or not OPENAI_AVAILABLE
 
         if not self.use_mock:
-            openai.api_key = self.api_key
+            try:
+                self.client = OpenAI(api_key=self.api_key)
+            except Exception as e:
+                print(f"Failed to initialize OpenAI client: {e}")
+                self.use_mock = True
+                self.client = None
+        else:
+            self.client = None
 
         # Track recently used response patterns to avoid repetition
         self.recent_response_types = []
@@ -48,7 +55,7 @@ class TherapeuticChatbot:
 
             messages.append({"role": "user", "content": message})
 
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=messages,
                 temperature=0.8,
