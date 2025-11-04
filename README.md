@@ -1,0 +1,252 @@
+# AI Self-Discovery Chatbot
+
+An intelligent chatbot designed to help users understand themselves better through conversations, journal entries, and image sharing. The AI learns from your patterns and provides personalized insights about your personality, interests, and behaviors.
+
+## Features
+
+- **Intelligent Conversations**: Chat with an AI that learns about you through your communication patterns
+- **Journal Entries**: Write and analyze journal entries to track your thoughts and emotions
+- **Image Analysis**: Upload photos to share visual aspects of your life
+- **Personalized Insights**: Get AI-generated insights about your:
+  - Interests and topics you care about
+  - Communication style
+  - Emotional patterns
+  - Behavioral trends
+- **User Profiling**: Automatic profile building based on your interactions
+- **Simple Interface**: Clean, modern web interface for easy interaction
+
+## Technology Stack
+
+- **Backend**: FastAPI (Python)
+- **Database**: SQLite with SQLAlchemy ORM
+- **AI**: OpenAI API (optional - works in mock mode without API key)
+- **Frontend**: HTML, CSS, JavaScript
+- **Image Processing**: Pillow (PIL)
+
+## Installation
+
+### Prerequisites
+
+- Python 3.8 or higher
+- pip (Python package manager)
+
+### Setup Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Ai-Video-editing-bot
+   ```
+
+2. **Create a virtual environment** (recommended)
+   ```bash
+   python -m venv venv
+
+   # On Linux/Mac
+   source venv/bin/activate
+
+   # On Windows
+   venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure environment variables** (optional)
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` and add your OpenAI API key if you have one:
+   ```
+   OPENAI_API_KEY=your_api_key_here
+   ```
+
+   **Note**: The chatbot works in mock mode without an API key, providing intelligent responses based on pattern matching.
+
+5. **Run the application**
+   ```bash
+   python main.py
+   ```
+
+6. **Open your browser**
+   Navigate to: `http://localhost:8000`
+
+## Usage
+
+### Getting Started
+
+1. **Set Your Username**: Enter a username when you first open the app
+2. **Start Chatting**: Begin a conversation with the AI about anything on your mind
+3. **Write Journal Entries**: Use the Journal tab to write personal reflections
+4. **Upload Images**: Share photos that represent moments in your life
+5. **View Insights**: Check the Insights tab to see what the AI has learned about you
+
+### Features Explained
+
+#### Chat
+- Have natural conversations with the AI
+- The AI analyzes your:
+  - Communication style (brief, detailed, inquisitive, reflective)
+  - Sentiment (positive, negative, neutral)
+  - Topics of interest
+  - Emotional patterns
+
+#### Journal
+- Write titled journal entries
+- Automatic analysis of:
+  - Writing patterns
+  - Emotional tone
+  - Topics and themes
+  - Word usage
+
+#### Insights
+- AI-generated observations about you
+- Categories include:
+  - Interests
+  - Emotional patterns
+  - Communication style
+  - Habits and behaviors
+- Confidence scores for each insight
+
+#### Image Upload
+- Share photos from your life
+- Visual content helps the AI understand you better
+- Images are stored and analyzed for context
+
+## API Documentation
+
+The backend provides a REST API with the following endpoints:
+
+### User Management
+- `POST /api/users` - Create a new user
+- `GET /api/users/{username}` - Get user information
+- `GET /api/profile/{username}` - Get complete profile summary
+
+### Chat
+- `POST /api/chat` - Send a message and get a response
+- `GET /api/conversations/{username}` - Get conversation history
+
+### Journal
+- `POST /api/journal` - Create a journal entry
+- `GET /api/journal/{username}` - Get all journal entries
+
+### Images
+- `POST /api/upload-image` - Upload and analyze an image
+
+### Insights
+- `GET /api/insights/{username}` - Generate and retrieve insights
+
+## Project Structure
+
+```
+Ai-Video-editing-bot/
+├── main.py                 # FastAPI application
+├── database.py             # Database models and configuration
+├── chatbot_engine.py       # AI chatbot logic
+├── requirements.txt        # Python dependencies
+├── .env.example           # Environment variables template
+├── .gitignore             # Git ignore file
+├── README.md              # This file
+├── static/                # Frontend files
+│   └── index.html         # Web interface
+├── uploads/               # User uploaded images
+└── chatbot.db            # SQLite database (created on first run)
+```
+
+## How It Works
+
+### Data Collection
+The chatbot learns about you through:
+1. **Conversation Analysis**: Every message is analyzed for sentiment, topics, style, and emotional content
+2. **Pattern Detection**: Over time, patterns emerge in your communication
+3. **Profile Building**: Information is stored in your user profile
+4. **Context Awareness**: Previous conversations inform future responses
+
+### Insight Generation
+Insights are generated by:
+1. Analyzing accumulated conversations, journal entries, and images
+2. Detecting patterns and frequencies
+3. Identifying dominant themes and styles
+4. Calculating confidence scores based on data quantity
+
+### Privacy
+- All data is stored locally in a SQLite database
+- No data is shared with third parties
+- You can delete the `chatbot.db` file to clear all data
+- Images are stored locally in the `uploads/` folder
+
+## Development
+
+### Running in Development Mode
+
+```bash
+# With auto-reload
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Adding OpenAI Integration
+
+To use real OpenAI responses instead of mock responses:
+
+1. Get an API key from [OpenAI](https://platform.openai.com/)
+2. Add it to your `.env` file:
+   ```
+   OPENAI_API_KEY=sk-...
+   ```
+3. Restart the application
+
+### Extending the Chatbot
+
+To add new features:
+- **New analysis types**: Modify `chatbot_engine.py`
+- **New API endpoints**: Add to `main.py`
+- **New database models**: Update `database.py`
+- **UI changes**: Edit `static/index.html`
+
+## Troubleshooting
+
+### Database Issues
+If you encounter database errors, delete `chatbot.db` and restart the app to create a fresh database.
+
+### Port Already in Use
+If port 8000 is already in use, change it in `.env`:
+```
+PORT=8080
+```
+
+### Import Errors
+Make sure all dependencies are installed:
+```bash
+pip install -r requirements.txt --upgrade
+```
+
+## Future Enhancements
+
+Potential features to add:
+- Export data and insights as PDF
+- Data visualization (charts, graphs)
+- Voice input/output
+- Multiple language support
+- Advanced image recognition with computer vision
+- Mood tracking over time
+- Goal setting and tracking
+- Integration with other apps (calendar, fitness, etc.)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - feel free to use this project for any purpose.
+
+## Support
+
+For issues or questions, please open an issue on the GitHub repository.
+
+---
+
+**Remember**: This chatbot is designed to help you understand yourself better, but it's not a replacement for professional mental health support. If you're struggling with mental health issues, please consult a qualified professional.

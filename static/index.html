@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Self-Discovery Companion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            height: 90vh;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+
+        .sidebar h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .sidebar p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .username-section {
+            margin-bottom: 30px;
+        }
+
+        .username-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .username-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .username-section button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .username-section button:hover {
+            background: #5568d3;
+        }
+
+        .tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            background: #f0f0f0;
+        }
+
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .user-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .user-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .stat:last-child {
+            border-bottom: none;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .chat-header {
+            padding: 20px 30px;
+            background: #667eea;
+            color: white;
+        }
+
+        .chat-header h2 {
+            font-size: 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .chat-input {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group button {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .input-group button:hover {
+            background: #5568d3;
+        }
+
+        .journal-form {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .journal-form input,
+        .journal-form textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .journal-form textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .journal-form button {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .journal-entries {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .journal-entry {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .journal-entry h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .journal-entry .date {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .insights-container {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .insight-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .insight-card .category {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .insight-card .insight-text {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .insight-card .confidence {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .upload-section {
+            padding: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #f8f9fa;
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+
+        .welcome-message h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>AI Self-Discovery</h1>
+            <p>Your personal companion for understanding yourself better</p>
+
+            <div class="username-section">
+                <input type="text" id="usernameInput" placeholder="Enter your username">
+                <button onclick="setUsername()">Start Session</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('chat')">Chat</button>
+                <button class="tab-button" onclick="switchTab('journal')">Journal</button>
+                <button class="tab-button" onclick="switchTab('insights')">Insights</button>
+                <button class="tab-button" onclick="switchTab('upload')">Upload Image</button>
+            </div>
+
+            <div class="user-info" id="userInfo" style="display: none;">
+                <h3>Your Progress</h3>
+                <div class="stat">
+                    <span>Conversations</span>
+                    <span id="convCount">0</span>
+                </div>
+                <div class="stat">
+                    <span>Journal Entries</span>
+                    <span id="journalCount">0</span>
+                </div>
+                <div class="stat">
+                    <span>Images</span>
+                    <span id="imageCount">0</span>
+                </div>
+                <div class="stat">
+                    <span>Insights</span>
+                    <span id="insightCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Chat Tab -->
+            <div class="tab-content active" id="chatTab">
+                <div class="chat-header">
+                    <h2>Chat with Your AI Companion</h2>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="welcome-message">
+                        <h2>Welcome!</h2>
+                        <p>Enter your username and start chatting to begin your self-discovery journey.</p>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                        <button onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal Tab -->
+            <div class="tab-content" id="journalTab">
+                <div class="chat-header">
+                    <h2>Journal Entries</h2>
+                </div>
+                <div class="journal-form">
+                    <h3>Write a New Entry</h3>
+                    <input type="text" id="journalTitle" placeholder="Entry title...">
+                    <textarea id="journalContent" placeholder="Write your thoughts..."></textarea>
+                    <button onclick="saveJournal()">Save Entry</button>
+                </div>
+                <div class="journal-entries" id="journalEntries"></div>
+            </div>
+
+            <!-- Insights Tab -->
+            <div class="tab-content" id="insightsTab">
+                <div class="chat-header">
+                    <h2>Your Personal Insights</h2>
+                </div>
+                <div class="insights-container" id="insightsContainer">
+                    <div class="welcome-message">
+                        <p>Insights will appear here as you interact more with the chatbot.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div class="tab-content" id="uploadTab">
+                <div class="chat-header">
+                    <h2>Upload Images</h2>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept="image/*" onchange="uploadImage()">
+                        <h3>Click to upload an image</h3>
+                        <p>Share moments from your life</p>
+                    </div>
+                    <div id="uploadStatus"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUsername = '';
+        const API_BASE = window.location.origin;
+
+        function setUsername() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+
+            currentUsername = username;
+
+            // Create/get user
+            fetch(`${API_BASE}/api/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('userInfo').style.display = 'block';
+                loadUserData();
+                document.querySelector('.welcome-message').innerHTML = `
+                    <h2>Hello, ${username}!</h2>
+                    <p>I'm here to help you understand yourself better. What's on your mind?</p>
+                `;
+            });
+        }
+
+        function loadUserData() {
+            if (!currentUsername) return;
+
+            fetch(`${API_BASE}/api/users/${currentUsername}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('convCount').textContent = data.conversation_count;
+                    document.getElementById('journalCount').textContent = data.journal_count;
+                    document.getElementById('imageCount').textContent = data.image_count;
+                });
+
+            loadConversations();
+            loadJournalEntries();
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            // Load data for specific tabs
+            if (tabName === 'insights') {
+                loadInsights();
+            } else if (tabName === 'journal') {
+                loadJournalEntries();
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            if (!currentUsername) {
+                alert('Please set your username first');
+                return;
+            }
+
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Send to API
+            fetch(`${API_BASE}/api/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUsername, message })
+            })
+            .then(res => res.json())
+            .then(data => {
+                addMessage(data.response, 'bot');
+                loadUserData();
+            })
+            .catch(err => {
+                addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            });
+        }
+
+        function addMessage(text, type) {
+            const messagesDiv = document.getElementById('chatMessages');
+
+            // Remove welcome message if exists
+            const welcome = messagesDiv.querySelector('.welcome-message');
+            if (welcome) welcome.remove();
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<div class="message-content">${text}</div>`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function loadConversations() {
+            if (!currentUsername) return;
+
+            fetch(`${API_BASE}/api/conversations/${currentUsername}?limit=20`)
+                .then(res => res.json())
+                .then(conversations => {
+                    const messagesDiv = document.getElementById('chatMessages');
+                    messagesDiv.innerHTML = '';
+
+                    conversations.reverse().forEach(conv => {
+                        addMessage(conv.message, 'user');
+                        addMessage(conv.response, 'bot');
+                    });
+                });
+        }
+
+        function saveJournal() {
+            if (!currentUsername) {
+                alert('Please set your username first');
+                return;
+            }
+
+            const title = document.getElementById('journalTitle').value.trim();
+            const content = document.getElementById('journalContent').value.trim();
+
+            if (!title || !content) {
+                alert('Please fill in both title and content');
+                return;
+            }
+
+            fetch(`${API_BASE}/api/journal`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUsername, title, content })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('journalTitle').value = '';
+                document.getElementById('journalContent').value = '';
+                loadJournalEntries();
+                loadUserData();
+                alert('Journal entry saved!');
+            });
+        }
+
+        function loadJournalEntries() {
+            if (!currentUsername) return;
+
+            fetch(`${API_BASE}/api/journal/${currentUsername}`)
+                .then(res => res.json())
+                .then(entries => {
+                    const container = document.getElementById('journalEntries');
+                    container.innerHTML = '<h3>Your Entries</h3>';
+
+                    entries.forEach(entry => {
+                        const entryDiv = document.createElement('div');
+                        entryDiv.className = 'journal-entry';
+                        entryDiv.innerHTML = `
+                            <h3>${entry.title}</h3>
+                            <div class="date">${new Date(entry.timestamp).toLocaleDateString()}</div>
+                            <p>${entry.content}</p>
+                        `;
+                        container.appendChild(entryDiv);
+                    });
+                });
+        }
+
+        function loadInsights() {
+            if (!currentUsername) return;
+
+            const container = document.getElementById('insightsContainer');
+            container.innerHTML = '<div class="loading">Generating insights...</div>';
+
+            fetch(`${API_BASE}/api/insights/${currentUsername}`)
+                .then(res => res.json())
+                .then(insights => {
+                    container.innerHTML = '';
+
+                    if (insights.length === 0) {
+                        container.innerHTML = '<div class="welcome-message"><p>Keep chatting and journaling to generate insights!</p></div>';
+                        return;
+                    }
+
+                    insights.forEach(insight => {
+                        const card = document.createElement('div');
+                        card.className = 'insight-card';
+                        card.innerHTML = `
+                            <div class="category">${insight.category}</div>
+                            <div class="insight-text">${insight.insight}</div>
+                            <div class="confidence">Confidence: ${insight.confidence}%</div>
+                        `;
+                        container.appendChild(card);
+                    });
+
+                    // Update insight count
+                    document.getElementById('insightCount').textContent = insights.length;
+                });
+        }
+
+        function uploadImage() {
+            if (!currentUsername) {
+                alert('Please set your username first');
+                return;
+            }
+
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('username', currentUsername);
+            formData.append('file', file);
+
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = '<div class="loading">Uploading and analyzing...</div>';
+
+            fetch(`${API_BASE}/api/upload-image`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                statusDiv.innerHTML = `
+                    <div class="insight-card">
+                        <div class="category">Image Analysis</div>
+                        <div class="insight-text">${data.analysis.description}</div>
+                    </div>
+                `;
+                loadUserData();
+                fileInput.value = '';
+            })
+            .catch(err => {
+                statusDiv.innerHTML = '<p style="color: red;">Upload failed. Please try again.</p>';
+            });
+        }
+    </script>
+</body>
+</html>
