@@ -159,6 +159,7 @@
             padding: 20px 30px;
             background: #667eea;
             color: white;
+            flex-shrink: 0;
         }
 
         .chat-header h2 {
@@ -168,8 +169,10 @@
         .chat-messages {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 30px;
             background: #f8f9fa;
+            min-height: 0;
         }
 
         .message {
@@ -212,6 +215,7 @@
             padding: 20px 30px;
             background: white;
             border-top: 1px solid #e0e0e0;
+            flex-shrink: 0;
         }
 
         .input-group {

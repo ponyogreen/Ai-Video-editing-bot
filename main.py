@@ -360,20 +360,43 @@ def build_user_context(user: User, db: Session) -> dict:
         "communication_style": user.profile_data.get("communication_style", "conversational") if user.profile_data else "conversational"
     }
 
-    # Get recent topics from conversations
+    # Get recent conversations for context
     recent_conversations = db.query(Conversation)\
         .filter(Conversation.user_id == user.id)\
         .order_by(Conversation.timestamp.desc())\
         .limit(10)\
         .all()
 
+    # Build recent messages for conversation context
+    recent_messages = []
     recent_topics = []
+    sentiments = []
+
     for conv in recent_conversations:
+        recent_messages.append({
+            "message": conv.message,
+            "response": conv.response,
+            "timestamp": conv.timestamp
+        })
+
         if conv.message_data and "analysis" in conv.message_data:
-            topics = conv.message_data["analysis"].get("topics", [])
+            analysis = conv.message_data["analysis"]
+            topics = analysis.get("topics", [])
             recent_topics.extend(topics)
 
+            sentiment = analysis.get("sentiment")
+            if sentiment:
+                sentiments.append(sentiment)
+
     context["recent_topics"] = list(set(recent_topics))
+    context["recent_messages"] = list(reversed(recent_messages))  # Reverse to chronological order
+
+    # Add sentiment pattern
+    if sentiments:
+        from collections import Counter
+        sentiment_counts = Counter(sentiments)
+        dominant = sentiment_counts.most_common(1)[0][0]
+        context["sentiment_pattern"] = dominant
 
     return context
 
